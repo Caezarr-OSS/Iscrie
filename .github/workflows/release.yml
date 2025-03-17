@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Go 1.23.4 manually
         run: |
@@ -34,6 +36,14 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install git-chglog
+        run: |
+          go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
+
+      - name: Generate Changelog
+        run: |
+          git-chglog -o CHANGELOG.md
+
       - name: Install dependencies
         run: |
           go mod tidy
@@ -51,18 +61,25 @@ jobs:
             GOOS=darwin GOARCH=amd64 go build -o dist/iscrie-darwin-amd64 ./cmd/main.go
           }
 
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum * > checksums.txt
+          cd ..
+
       - name: Generate SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          format: spdx-json
-          output-file: ./dist/iscrie-sbom.spdx.json
+        run: |
+          go install github.com/anchore/syft/cmd/syft@latest
+          syft . -o cyclonedx-json > dist/sbom.json
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
+          body_path: CHANGELOG.md
           files: |
             dist/*
+            CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

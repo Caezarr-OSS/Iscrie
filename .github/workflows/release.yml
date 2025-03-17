@@ -48,7 +48,6 @@ jobs:
             echo "Falling back to manual release build..."
             mkdir -p dist
             GOOS=linux GOARCH=amd64 go build -o dist/iscrie-linux-amd64 ./cmd/iscrie
-            GOOS=windows GOARCH=amd64 go build -o dist/iscrie-windows-amd64.exe ./cmd/iscrie
             GOOS=darwin GOARCH=amd64 go build -o dist/iscrie-darwin-amd64 ./cmd/iscrie
           }
 

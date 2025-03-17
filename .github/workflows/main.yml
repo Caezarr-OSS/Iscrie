@@ -23,11 +23,11 @@ jobs:
       - name: Verify Go version
         run: go version
 
-      - name: Install Task via apt
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y task
-          task --version
+      - name: Install Task
+        uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
         run: |

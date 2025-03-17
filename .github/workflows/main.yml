@@ -1,18 +1,13 @@
-name: Release Binaries
+name: End-to-End Tests (Main)
 
 on:
   push:
-    tags:
-      - "[0-9]+.[0-9]+.[0-9]+*"  # Supporte SemVer + pré-releases comme "-RC1", "-beta"
-
-permissions:
-  contents: write
+    branches: [main]
 
 jobs:
-  build:
-    name: Build and Release Binaries
+  e2e-test:
+    name: End-to-End Tests
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,21 +36,27 @@ jobs:
       - name: Run unit tests
         run: go test ./...
 
-      - name: Build binaries
-        run: task release
+      - name: Build
+        run: task build
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
           format: spdx-json
-          output-file: ./dist/iscrie-sbom.spdx.json
+          artifact-name: iscrie-sbom
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Run Maven parser tests
+        run: go run ./cmd/test_maven
+
+      # Ajoutez ici d'autres tests de bout en bout si nécessaire, par exemple :
+      # - Tests d'intégration avec nexus
+      # - Tests de performance 
+      # - etc.
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          files: |
-            dist/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: iscrie-binaries
+          path: |
+            bin/
+            iscrie-sbom.spdx.json

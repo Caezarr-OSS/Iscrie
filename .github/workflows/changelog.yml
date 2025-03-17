@@ -27,7 +27,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           output-file: "CHANGELOG.md"
-          version: ${{ github.ref_name }}
+          skip-tag: true  # Empêche la création d'un nouveau tag car nous utilisons celui déjà existant
+          skip-commit: false
+          git-branch: main
 
       - name: Commit & Push Changelog
         run: |

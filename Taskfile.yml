@@ -9,7 +9,7 @@ tasks:
     desc: "Build the application for the current OS/ARCH"
     cmds:
       - echo "Building {{.APP_NAME}} for {{OS}}/{{ARCH}}..."
-      - go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-{{OS}}-{{ARCH}} ./cmd/iscrie
+      - go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-{{OS}}-{{ARCH}} ./cmd/main.go
     env:
       GOOS: "{{OS}}"
       GOARCH: "{{ARCH}}"
@@ -34,15 +34,15 @@ tasks:
     desc: "Build Linux binaries"
     cmds:
       - echo "Building for Linux..."
-      - GOOS=linux GOARCH=amd64 go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-linux-amd64 ./cmd/iscrie
-      - GOOS=linux GOARCH=arm64 go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-linux-arm64 ./cmd/iscrie
+      - GOOS=linux GOARCH=amd64 go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-linux-amd64 ./cmd/main.go
+      - GOOS=linux GOARCH=arm64 go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-linux-arm64 ./cmd/main.go
 
   build-macos:
     desc: "Build macOS binaries"
     cmds:
       - echo "Building for macOS..."
-      - GOOS=darwin GOARCH=amd64 go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-darwin-amd64 ./cmd/iscrie
-      - GOOS=darwin GOARCH=arm64 go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-darwin-arm64 ./cmd/iscrie
+      - GOOS=darwin GOARCH=amd64 go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-darwin-amd64 ./cmd/main.go
+      - GOOS=darwin GOARCH=arm64 go build -o {{.BUILD_DIR}}/{{.APP_NAME}}-darwin-arm64 ./cmd/main.go
 
   clean:
     desc: "Clean build directory"

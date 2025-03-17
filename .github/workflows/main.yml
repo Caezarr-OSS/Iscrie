@@ -38,7 +38,7 @@ jobs:
         run: go test ./...
 
       - name: Build
-        run: task build || go build -o bin/iscrie ./cmd/iscrie
+        run: task build || go build -o bin/iscrie ./cmd/main.go
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0

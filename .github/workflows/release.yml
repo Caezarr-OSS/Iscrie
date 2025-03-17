@@ -39,10 +39,13 @@ jobs:
       - name: Install git-chglog
         run: |
           go install github.com/git-chglog/git-chglog/cmd/git-chglog@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
+          # S'assurer que git-chglog est disponible
+          export PATH=$PATH:$HOME/go/bin
 
       - name: Generate Changelog
         run: |
-          git-chglog -o CHANGELOG.md
+          $HOME/go/bin/git-chglog -o CHANGELOG.md
 
       - name: Install dependencies
         run: |
@@ -70,7 +73,8 @@ jobs:
       - name: Generate SBOM
         run: |
           go install github.com/anchore/syft/cmd/syft@latest
-          syft . -o cyclonedx-json > dist/sbom.json
+          export PATH=$PATH:$HOME/go/bin
+          $HOME/go/bin/syft . -o cyclonedx-json > dist/sbom.json
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

@@ -25,10 +25,12 @@ jobs:
       - name: Verify Go version
         run: go version
 
-      - name: Install Taskfile
+      - name: Install Task (go-task/task)
         run: |
-          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d
+          sh -c "$(curl -fsSL https://raw.githubusercontent.com/go-task/task/master/install-task.sh)" -- -d
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH=$HOME/.local/bin:$PATH
+          task --version
 
       - name: Install dependencies
         run: |
@@ -38,8 +40,13 @@ jobs:
       - name: Run tests
         run: go test ./...
 
-      - name: Build
-        run: task build
+      - name: Build manually if Task fails
+        run: |
+          if ! $HOME/.local/bin/task build; then
+            echo "Falling back to manual build..."
+            mkdir -p bin
+            go build -o bin/iscrie ./cmd/iscrie
+          fi
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0

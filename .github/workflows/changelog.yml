@@ -1,9 +1,11 @@
+# Workflow désactivé temporairement, décommenter pour réactiver
 name: Generate Changelog
 
 on:
-  push:
-    tags:
-      - "[0-9]+.[0-9]+.[0-9]+*"  # Déclenché uniquement sur les tags SemVer
+  workflow_dispatch:
+#  push:
+#    tags:
+#      - "[0-9]+.[0-9]+.[0-9]+*"  # Déclenché uniquement sur les tags SemVer
 
 jobs:
   changelog:

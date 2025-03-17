@@ -8,30 +8,64 @@ import (
 	"strings"
 )
 
+// List of file extensions to ignore when processing Maven files
+var IgnoredExtensions = []string{
+	".md5",
+	".sha1",
+	".asc",  // PGP signature
+	".sha256",
+	".sha512",
+}
+
+// IsIgnoredExtension checks if a file has an extension that should be ignored
+func IsIgnoredExtension(fileName string) bool {
+	for _, ext := range IgnoredExtensions {
+		if strings.HasSuffix(fileName, ext) {
+			return true
+		}
+	}
+	return false
+}
+
 // ParseMavenFileName parses the Maven file name and extracts artifact details.
 func ParseMavenFileName(fileName string, versionFromPath string) (artifactID, version, classifier, extension string, err error) {
+	// Check if the file has an ignored extension
+	if IsIgnoredExtension(fileName) {
+		utils.LogDebug("Ignoring file with extension to be skipped: %s", fileName)
+		return "", "", "", "", utils.LogAndReturnError("file '%s' has an extension that should be ignored", fileName)
+	}
+
 	extension = filepath.Ext(fileName)
 	baseName := strings.TrimSuffix(fileName, extension)
-
-	regex := regexp.MustCompile(`^(.+?)-(\d[\w\.-]*?)(?:-([\w\.-]+))?$`)
+	
+	// The path is the source of truth for the version
+	version = versionFromPath
+	
+	// Build a pattern to find the artifactID and classifier
+	// We search for the exact version from the path in the file name
+	versionPart := strings.ReplaceAll(versionFromPath, ".", "\\.")
+	pattern := fmt.Sprintf(`^(.+?)-%s(?:-(.+))?$`, versionPart)
+	regex := regexp.MustCompile(pattern)
 	matches := regex.FindStringSubmatch(baseName)
-
-	if matches == nil || len(matches) < 3 {
+	
+	if matches == nil || len(matches) < 2 {
+		utils.LogError("Failed to parse file name '%s' with version '%s'", fileName, versionFromPath)
 		return "", "", "", "", utils.LogAndReturnError("failed to parse file name '%s'. Regex did not match", fileName)
 	}
-
+	
+	// First group: artifactID
 	artifactID = matches[1]
-	parsedVersion := matches[2]
-	classifierCandidate := matches[3]
-
-	if parsedVersion == versionFromPath {
-		version = parsedVersion
-		classifier = classifierCandidate
+	
+	// Second group (optional): classifier
+	if len(matches) > 2 && matches[2] != "" {
+		classifier = matches[2]
 	} else {
-		version = versionFromPath
-		classifier = parsedVersion
+		classifier = ""
 	}
-
+	
+	utils.LogDebug("Parsed Maven file - ArtifactID: %s, Version: %s, Classifier: %s, Extension: %s",
+		artifactID, version, classifier, extension)
+	
 	return artifactID, version, classifier, extension, nil
 }
 

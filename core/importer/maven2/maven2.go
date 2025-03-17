@@ -36,6 +36,12 @@ func NewMaven2Importer(baseURL, repository, rootPath string, httpClient *network
 
 // BuildFullTargetURL constructs the full target URL for Maven2 files.
 func (mi *Maven2Importer) BuildFullTargetURL(filePath string) (string, error) {
+	// Check if the file has an extension that should be ignored
+	if IsIgnoredExtension(filepath.Base(filePath)) {
+		utils.LogDebug("Skipping file with ignored extension: %s", filePath)
+		return "", fmt.Errorf("file '%s' has an extension that should be ignored", filePath)
+	}
+
 	// Log initial path
 	utils.LogDebug("File Path: %s", filePath)
 
@@ -90,6 +96,12 @@ func (mi *Maven2Importer) UploadMaven2File(filePath string, retryAttempts int, d
 	}
 	if errorLogger == nil {
 		errorLogger = func(format string, args ...interface{}) {}
+	}
+
+	// Check if we should skip this file based on its extension
+	if IsIgnoredExtension(filepath.Base(filePath)) {
+		debugLogger("Skipping file with ignored extension: %s", filePath)
+		return nil // Return nil as this is not an error, just a file we're intentionally skipping
 	}
 
 	// Step 1: Build full URL
